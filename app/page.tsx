@@ -56,14 +56,21 @@ export default function Home() {
     }
   };
 
-  if (checkingAuth) return <div className="p-10 text-center">Loading...</div>;
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-[#030712] flex items-center justify-center text-white">
+        <div className="animate-pulse font-bold tracking-tighter text-2xl">
+          GitViral 🚀
+        </div>
+      </div>
+    );
+  }
 
-  // --- LANDING PAGE (If not logged in) ---
   // --- STUNNING LANDING PAGE (Logged Out) ---
   if (!user) {
     return (
-      <main className="min-h-screen bg-[#030712] text-white selection:bg-blue-500/30 overflow-hidden">
-        {/* Subtle Background Glow */}
+      <main className="min-h-screen bg-[#030712] text-white selection:bg-blue-500/30 overflow-hidden relative">
+        {/* Background Glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-blue-600/10 blur-[120px] rounded-full -z-10" />
 
         <nav className="p-8 flex justify-between items-center max-w-6xl mx-auto backdrop-blur-sm fixed top-0 left-0 right-0 z-50">
@@ -82,7 +89,7 @@ export default function Home() {
         </nav>
 
         <header className="pt-40 pb-20 px-6 text-center max-w-4xl mx-auto relative">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-medium mb-8 animate-fade-in">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-medium mb-8">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
@@ -91,7 +98,7 @@ export default function Home() {
           </div>
 
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-8 bg-gradient-to-b from-white to-gray-400 bg-clip-text text-transparent">
-            Your README is a <br />{" "}
+            Your README is a <br />
             <span className="text-blue-500">marketing goldmine.</span>
           </h1>
 
@@ -116,7 +123,6 @@ export default function Home() {
           </div>
         </header>
 
-        {/* Bento Grid Preview */}
         <section className="max-w-6xl mx-auto px-6 py-20">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-2 bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-md">
@@ -141,81 +147,119 @@ export default function Home() {
       </main>
     );
   }
-  // --- DASHBOARD (If logged in) ---
+
+  // --- PRO DARK DASHBOARD (Logged In) ---
   return (
-    <main className="min-h-screen bg-gray-50 py-12 px-4 relative text-black">
-      <button
-        onClick={() =>
-          supabase.auth.signOut().then(() => window.location.reload())
-        }
-        className="absolute top-6 left-6 text-sm text-gray-400 hover:text-black"
-      >
-        Logout
-      </button>
+    <main className="min-h-screen bg-[#030712] text-white selection:bg-blue-500/30">
+      {/* Background Glows */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/5 blur-[100px] -z-10" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-600/5 blur-[100px] -z-10" />
 
-      <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold">Generator Dashboard</h2>
-          <div className="mt-4 flex items-center justify-center gap-4">
-            <span className="bg-blue-100 text-blue-800 px-4 py-1 rounded-full text-sm font-bold">
-              Credits: {credits}
-            </span>
-            <a
-              href="https://ko-fi.com/s/de1cb65423"
-              target="_blank"
-              className="text-blue-600 text-sm underline"
-            >
-              Refill Credits
-            </a>
+      <nav className="p-6 border-b border-white/5 flex justify-between items-center backdrop-blur-md sticky top-0 z-50">
+        <div className="font-bold italic text-xl tracking-tighter flex items-center gap-2">
+          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+            G
           </div>
+          GitViral
         </div>
-
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-          <textarea
-            className="w-full h-48 p-4 border rounded-xl text-black bg-white focus:ring-2 focus:ring-blue-500 outline-none transition"
-            placeholder="Paste your README or code snippet..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-          />
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-1.5 rounded-full">
+            <span className="text-blue-400 text-sm font-bold">
+              {credits} Credits Left
+            </span>
+          </div>
           <button
-            onClick={generate}
-            disabled={loading || credits <= 0}
-            className="w-full mt-4 bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700 disabled:bg-gray-300 transition"
+            onClick={() =>
+              supabase.auth.signOut().then(() => window.location.reload())
+            }
+            className="text-sm text-gray-500 hover:text-white transition"
           >
-            {loading
-              ? "Crunching..."
-              : credits <= 0
-              ? "No Credits"
-              : "Generate Viral Posts"}
+            Logout
           </button>
         </div>
+      </nav>
 
-        {output && (
-          <div className="mt-12 space-y-6">
-            {output
-              .split("### ")
-              .filter(Boolean)
-              .map((post, index) => (
-                <div
-                  key={index}
-                  className="bg-white p-6 rounded-2xl shadow-md border text-left relative group"
-                >
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(post);
-                      alert("Copied!");
-                    }}
-                    className="absolute top-4 right-4 bg-gray-50 px-3 py-1 rounded-lg text-xs hover:bg-gray-100 transition"
-                  >
-                    Copy
-                  </button>
-                  <div className="prose prose-blue whitespace-pre-wrap pt-4 font-mono text-sm leading-relaxed">
-                    {"### " + post}
-                  </div>
-                </div>
-              ))}
+      <div className="max-w-4xl mx-auto py-12 px-6">
+        <div className="mb-10">
+          <h2 className="text-4xl font-extrabold mb-2 tracking-tight">
+            Generator Dashboard
+          </h2>
+          <p className="text-gray-400 text-lg">
+            Turn your technical logic into viral marketing copy.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-8">
+          {/* Input Area */}
+          <div className="bg-white/5 border border-white/10 p-1 rounded-3xl backdrop-blur-xl shadow-2xl overflow-hidden">
+            <textarea
+              className="w-full h-64 p-6 bg-transparent text-white placeholder:text-gray-700 outline-none resize-none text-lg border-none focus:ring-0"
+              placeholder="Paste your README.md or a specific code function here..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+            />
+            <div className="p-4 bg-white/[0.02] border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
+              <a
+                href="https://ko-fi.com/s/de1cb65423"
+                target="_blank"
+                className="text-sm text-blue-400 hover:text-blue-300 transition underline decoration-blue-400/30"
+              >
+                Need more credits? Refill here.
+              </a>
+              <button
+                onClick={generate}
+                disabled={loading || credits <= 0}
+                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 disabled:bg-gray-800 text-white font-bold py-3 px-10 rounded-2xl transition-all shadow-lg shadow-blue-600/20 active:scale-95 flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Crunching...
+                  </>
+                ) : credits <= 0 ? (
+                  "No Credits Left"
+                ) : (
+                  "Generate Viral Posts"
+                )}
+              </button>
+            </div>
           </div>
-        )}
+
+          {/* Results Area */}
+          {output && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <div className="flex items-center gap-2 text-gray-500 text-sm font-bold uppercase tracking-widest px-2">
+                <div className="h-px bg-white/10 flex-1"></div>
+                Your Content is Ready
+                <div className="h-px bg-white/10 flex-1"></div>
+              </div>
+              {output
+                .split("### ")
+                .filter(Boolean)
+                .map((post, index) => (
+                  <div
+                    key={index}
+                    className="group bg-white/[0.03] border border-white/10 p-8 rounded-3xl relative hover:bg-white/[0.05] transition-all hover:border-white/20 shadow-xl"
+                  >
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText("### " + post);
+                        alert("Copied to clipboard!");
+                      }}
+                      className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-all bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg"
+                    >
+                      Copy Text
+                    </button>
+                    <div className="prose prose-invert max-w-none">
+                      <div className="font-mono text-sm leading-relaxed text-gray-300">
+                        {"### " + post}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
       </div>
     </main>
   );
