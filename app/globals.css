@@ -24,3 +24,52 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* remove default body margin and make layout predictable */
+body {
+  margin: 0;
+}
+/* simple brand helper */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.brand img {
+  display: block;
+}
+
+/* top navigation bar */
+.site-nav {
+  width: 100%;
+  box-sizing: border-box;
+}
+.site-nav .max-w-6xl {
+  width: 100%;
+}
+
+/* site logo sizing and responsiveness */
+.site-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+@media (min-width: 768px) {
+  .site-logo {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .site-logo {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+/* ensure content isn't hidden under the fixed header */
+.page-top-spacer {
+  height: 64px;
+}
