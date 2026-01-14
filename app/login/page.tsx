@@ -1,15 +1,18 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react"; // Added Suspense
 import { supabase } from "@/lib/supabase";
 import { useRouter, useSearchParams } from "next/navigation";
 import Loader from "../components/Loader";
 
-export default function AuthPage() {
+// 1. We move your logic and UI into a separate component
+function AuthContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const router = useRouter();
+  
+  // useSearchParams is what causes the build error if not wrapped in Suspense
   const searchParams = useSearchParams();
   const isRegister = searchParams.get("mode") === "register";
 
@@ -27,7 +30,6 @@ export default function AuthPage() {
     setMessage("");
 
     if (isRegister) {
-      // --- JOIN LOGIC (NEEDS CONFIRMATION) ---
       const { error } = await supabase.auth.signUp({ email, password });
       if (error) alert(error.message);
       else
@@ -35,7 +37,6 @@ export default function AuthPage() {
           "Account created! Please check your email to confirm and log in."
         );
     } else {
-      // --- LOGIN LOGIC (IMMEDIATE) ---
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -47,11 +48,91 @@ export default function AuthPage() {
           alert("Invalid email or password.");
         }
       } else {
-        router.push("/"); // IMMEDIATE ENTRY
+        router.push("/");
       }
     }
     setLoading(false);
   };
+
+  return (
+    <div className="max-w-md w-full bg-white/5 border border-white/10 p-10 rounded-[40px] backdrop-blur-xl shadow-2xl text-center">
+      <h2 className="text-3xl font-bold mb-2 tracking-tight">
+        {isRegister ? "Join GitViral 🚀" : "Welcome Back"}
+      </h2>
+      <p className="text-gray-400 mb-8 text-sm">
+        {isRegister
+          ? "Confirm your email to get 3 credits."
+          : "Enter your details for immediate access."}
+      </p>
+
+      <form onSubmit={handleAuth} className="space-y-4 text-left">
+        <div className="space-y-1">
+          <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 ml-1">
+            Email
+          </label>
+          <input
+            type="email"
+            placeholder="name@company.com"
+            className="w-full p-4 bg-white/[0.03] border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-500 transition"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 ml-1">
+            Password
+          </label>
+          <input
+            type="password"
+            placeholder="••••••••"
+            className="w-full p-4 bg-white/[0.03] border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-500 transition"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
+        >
+          {loading ? (
+            <>
+              <Loader size={16} color="#fff" />
+              <span>Processing...</span>
+            </>
+          ) : isRegister ? (
+            "Create Account & Verify"
+          ) : (
+            "Login Immediately"
+          )}
+        </button>
+      </form>
+
+      {message && (
+        <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-2xl text-blue-400 text-sm">
+          {message}
+        </div>
+      )}
+
+      <button
+        onClick={() =>
+          router.push(isRegister ? "/login" : "/login?mode=register")
+        }
+        className="mt-6 text-xs text-gray-500 hover:text-white transition"
+      >
+        {isRegister
+          ? "Already have an account? Login"
+          : "New here? Join for free"}
+      </button>
+    </div>
+  );
+}
+
+// 2. The main AuthPage just wraps the content in Suspense
+export default function AuthPage() {
+  const router = useRouter();
 
   return (
     <main className="min-h-screen bg-[#030712] text-white flex items-center justify-center p-6 relative">
@@ -65,78 +146,11 @@ export default function AuthPage() {
       </nav>
       <div className="pt-20" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/10 blur-[120px] rounded-full -z-10" />
-      <div className="max-w-md w-full bg-white/5 border border-white/10 p-10 rounded-[40px] backdrop-blur-xl shadow-2xl text-center">
-        <h2 className="text-3xl font-bold mb-2 tracking-tight">
-          {isRegister ? "Join GitViral 🚀" : "Welcome Back"}
-        </h2>
-        <p className="text-gray-400 mb-8 text-sm">
-          {isRegister
-            ? "Confirm your email to get 3 credits."
-            : "Enter your details for immediate access."}
-        </p>
-
-        <form onSubmit={handleAuth} className="space-y-4 text-left">
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 ml-1">
-              Email
-            </label>
-            <input
-              type="email"
-              placeholder="name@company.com"
-              className="w-full p-4 bg-white/[0.03] border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-500 transition"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 ml-1">
-              Password
-            </label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              className="w-full p-4 bg-white/[0.03] border border-white/10 rounded-2xl text-white outline-none focus:ring-2 focus:ring-blue-500 transition"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
-          >
-            {loading ? (
-              <>
-                <Loader size={16} color="#fff" />
-                <span>Processing...</span>
-              </>
-            ) : isRegister ? (
-              "Create Account & Verify"
-            ) : (
-              "Login Immediately"
-            )}
-          </button>
-        </form>
-
-        {message && (
-          <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-2xl text-blue-400 text-sm">
-            {message}
-          </div>
-        )}
-
-        <button
-          onClick={() =>
-            router.push(isRegister ? "/login" : "/login?mode=register")
-          }
-          className="mt-6 text-xs text-gray-500 hover:text-white transition"
-        >
-          {isRegister
-            ? "Already have an account? Login"
-            : "New here? Join for free"}
-        </button>
-      </div>
+      
+      {/* This Suspense block fixes the Vercel error */}
+      <Suspense fallback={<Loader size={40} color="#3b82f6" />}>
+        <AuthContent />
+      </Suspense>
     </main>
   );
 }
