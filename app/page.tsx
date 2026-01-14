@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
+import Loader from "./components/Loader";
+import Footer from "./components/footer";
 
 export default function Home() {
   const [input, setInput] = useState("");
@@ -58,8 +60,8 @@ export default function Home() {
 
   if (checkingAuth)
     return (
-      <div className="min-h-screen bg-[#030712] flex items-center justify-center text-white text-2xl animate-pulse">
-        GitViral 🚀
+      <div className="min-h-screen bg-[#030712] flex items-center justify-center">
+        <Loader size={56} color="#ffffff" />
       </div>
     );
 
@@ -261,50 +263,7 @@ export default function Home() {
         </section>
 
         {/* --- FOOTER --- */}
-        <footer className="max-w-6xl mx-auto px-6 py-12 border-t border-white/5">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="flex items-center gap-2">
-              <img
-                src="/ideogram.png"
-                alt="GitViral Logo"
-                className="w-10 h-auto object-contain"
-              />
-              <span className="font-bold tracking-tighter text-gray-300">
-                GitViral
-              </span>
-            </div>
-
-            <div className="flex gap-8 text-sm text-gray-500">
-              <a href="#" className="hover:text-white transition">
-                Twitter / X
-              </a>
-              <a
-                href="https://ko-fi.com/s/de1cb65423"
-                target="_blank"
-                className="hover:text-white transition"
-              >
-                Pricing
-              </a>
-              <a
-                href="mailto:your-email@example.com"
-                className="hover:text-white transition"
-              >
-                Support
-              </a>
-            </div>
-
-            <p className="text-xs text-gray-600">
-              © {new Date().getFullYear()} GitViral. Built for the
-              #buildinpublic community.
-            </p>
-          </div>
-
-          <div className="mt-8 text-center">
-            <p className="text-[10px] text-gray-800 uppercase tracking-[0.2em]">
-              Powered by Groq • Llama 3.3 • Supabase • Vercel
-            </p>
-          </div>
-        </footer>
+        <Footer />
       </main>
     );
   }
@@ -314,9 +273,11 @@ export default function Home() {
     <main className="min-h-screen bg-[#030712] text-white selection:bg-blue-500/30">
       <nav className="p-6 border-b border-white/5 flex justify-between items-center backdrop-blur-md sticky top-0 z-50 bg-[#030712]/80">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold">
-            G
-          </div>
+          <img
+            src="/ideogram.png"
+            alt="GitViral Logo"
+            className="w-15 h-auto object-contain"
+          />
           <span className="text-xl font-bold tracking-tighter">GitViral</span>
         </div>
         <div className="flex items-center gap-6">
@@ -362,9 +323,16 @@ export default function Home() {
             <button
               onClick={generate}
               disabled={loading || credits <= 0}
-              className="bg-blue-600 hover:bg-blue-500 disabled:bg-gray-800 text-white font-bold py-3 px-10 rounded-2xl transition-all active:scale-95 shadow-lg shadow-blue-600/20"
+              className="bg-blue-600 hover:bg-blue-500 disabled:bg-gray-800 text-white font-bold py-3 px-10 rounded-2xl transition-all active:scale-95 shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
             >
-              {loading ? "Crunching..." : "Generate Viral Posts"}
+              {loading ? (
+                <>
+                  <Loader size={16} color="#fff" />
+                  <span>Crunching...</span>
+                </>
+              ) : (
+                "Generate Viral Posts"
+              )}
             </button>
           </div>
         </div>
@@ -396,6 +364,7 @@ export default function Home() {
           </div>
         )}
       </div>
+      <Footer />
     </main>
   );
 }

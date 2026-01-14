@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter, useSearchParams } from "next/navigation";
+import Loader from "../components/Loader";
 
 export default function AuthPage() {
   const [email, setEmail] = useState("");
@@ -104,13 +105,18 @@ export default function AuthPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition shadow-lg shadow-blue-600/20"
+            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-2xl transition shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
           >
-            {loading
-              ? "Processing..."
-              : isRegister
-              ? "Create Account & Verify"
-              : "Login Immediately"}
+            {loading ? (
+              <>
+                <Loader size={16} color="#fff" />
+                <span>Processing...</span>
+              </>
+            ) : isRegister ? (
+              "Create Account & Verify"
+            ) : (
+              "Login Immediately"
+            )}
           </button>
         </form>
 

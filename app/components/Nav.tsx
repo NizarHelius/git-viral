@@ -23,12 +23,10 @@ export default function Nav({ loggedIn = false, credits }: Props) {
           onClick={() => router.push("/")}
           className="flex items-center gap-3 cursor-pointer select-none"
         >
-          <Image
-            className="site-logo"
-            src="/logo.png"
-            alt="GitViral logo"
-            width={48}
-            height={48}
+          <img
+            src="/ideogram.png"
+            alt="GitViral Logo"
+            className="w-15 h-auto object-contain"
           />
           <span className="text-xl font-bold tracking-tighter">GitViral</span>
         </div>
