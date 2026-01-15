@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Loader from "./components/Loader";
 import Footer from "./components/footer";
+import { auto } from "groq-sdk/_shims/registry.mjs";
 
 export default function Home() {
   const [input, setInput] = useState("");
@@ -69,18 +70,36 @@ export default function Home() {
   if (!user) {
     return (
       <main className="min-h-screen bg-[#030712] text-white selection:bg-blue-500/30 overflow-hidden relative">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-blue-600/10 blur-[120px] rounded-full -z-10" />
+        {/* --- TOP ANNOUNCEMENT BANNER --- */}
+        <div className="relative z-[60] bg-blue-600 text-white py-3 px-4 shadow-2xl">
+          <div className="max-w-6xl mx-auto flex items-center justify-center gap-3 text-sm font-bold">
+            <span className="flex h-2 w-2 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+            </span>
+            <span>We are live on Product Hunt! 🚀</span>
+            <a
+              href="https://www.producthunt.com/posts/gitviral"
+              target="_blank"
+              className="bg-white text-blue-600 px-3 py-1 rounded-full text-[10px] uppercase tracking-tighter hover:bg-gray-100 transition"
+            >
+              Support us here →
+            </a>
+          </div>
+        </div>
 
-        {/* --- FIXED NAVBAR --- */}
-        <nav className="p-4 flex justify-between items-center max-w-6xl mx-auto backdrop-blur-sm fixed top-0 left-0 right-0 z-50">
+        {/* --- STICKY NAVBAR --- */}
+        <nav className="p-8 flex justify-between items-center max-w-6xl mx-auto backdrop-blur-md sticky top-0 left-0 right-0 z-50 bg-[#030712]/50">
           <div
             onClick={() => router.push("/")}
             className="flex items-center gap-2 cursor-pointer"
           >
             <img
               src="/ideogram.png"
-              alt="GitViral Logo"
-              className="w-15 h-auto object-contain"
+              alt="GitViral"
+              width={70}
+              height={70}
+              className="w-14 sm:w-16 md:w-20 h-auto object-contain"
             />
             <span className="text-xl font-bold tracking-tighter">GitViral</span>
           </div>
@@ -102,7 +121,9 @@ export default function Home() {
         </nav>
 
         {/* --- HERO SECTION --- */}
-        <header className="pt-48 pb-20 px-6 text-center max-w-4xl mx-auto relative">
+        {/* Reduced the padding-top from 48 to 24 because sticky nav takes up space now */}
+        <header className="pt-24 pb-20 px-6 text-center max-w-4xl mx-auto relative">
+          {/* Rest of your header code... */}
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-8 bg-gradient-to-b from-white to-gray-400 bg-clip-text text-transparent leading-tight">
             Your README is a <br />{" "}
             <span className="text-blue-500">marketing goldmine.</span>
@@ -116,7 +137,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
               onClick={() => router.push("/login?mode=register")}
-              className="bg-blue-600 text-white px-15 py-4 rounded-2xl font-bold shadow-lg shadow-blue-600/20 hover:scale-105 transition"
+              className="bg-blue-600 text-white px-6 sm:px-10 py-4 rounded-2xl font-bold shadow-lg shadow-blue-600/20 hover:scale-105 transition"
             >
               Join for Free →
             </button>
@@ -276,7 +297,7 @@ export default function Home() {
           <img
             src="/ideogram.png"
             alt="GitViral Logo"
-            className="w-15 h-auto object-contain"
+            className="w-10 sm:w-12 md:w-14 lg:w-16 h-auto object-contain"
           />
           <span className="text-xl font-bold tracking-tighter">GitViral</span>
         </div>

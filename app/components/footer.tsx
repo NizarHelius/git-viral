@@ -16,7 +16,10 @@ const Footer: React.FC = () => {
         </div>
 
         <div className="flex gap-8 text-sm text-gray-500">
-          <a href="https://x.com/poop_scoop9" className="hover:text-white transition">
+          <a
+            href="https://x.com/poop_scoop9"
+            className="hover:text-white transition"
+          >
             Twitter / X
           </a>
           <a

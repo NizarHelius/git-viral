@@ -11,7 +11,7 @@ function AuthContent() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const router = useRouter();
-  
+
   // useSearchParams is what causes the build error if not wrapped in Suspense
   const searchParams = useSearchParams();
   const isRegister = searchParams.get("mode") === "register";
@@ -146,7 +146,7 @@ export default function AuthPage() {
       </nav>
       <div className="pt-20" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/10 blur-[120px] rounded-full -z-10" />
-      
+
       {/* This Suspense block fixes the Vercel error */}
       <Suspense fallback={<Loader size={40} color="#3b82f6" />}>
         <AuthContent />

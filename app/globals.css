@@ -5,6 +5,23 @@
   --foreground: #171717;
 }
 
+/* Make box-sizing predictable across the site */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Make images and media scale nicely on small screens */
+img,
+picture,
+video,
+svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -72,6 +89,21 @@ body {
 /* ensure content isn't hidden under the fixed header */
 .page-top-spacer {
   height: 64px;
+}
+
+/* Responsive typography helpers */
+h1,
+h2,
+h3,
+h4,
+h5 {
+  margin: 0;
+}
+
+/* Use a fluid clamp for hero headings */
+.hero-title {
+  font-size: clamp(1.8rem, 3.5vw + 1rem, 4.5rem);
+  line-height: 1.05;
 }
 
 /* Loader: three-body */

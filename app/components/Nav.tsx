@@ -26,7 +26,7 @@ export default function Nav({ loggedIn = false, credits }: Props) {
           <img
             src="/ideogram.png"
             alt="GitViral Logo"
-            className="w-15 h-auto object-contain"
+            className="w-10 sm:w-12 md:w-14 lg:w-16 h-auto object-contain"
           />
           <span className="text-xl font-bold tracking-tighter">GitViral</span>
         </div>
