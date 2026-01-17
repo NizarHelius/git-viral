@@ -13,6 +13,7 @@ export default function Home() {
   const [user, setUser] = useState<any>(null);
   const [credits, setCredits] = useState<number>(0);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [history, setHistory] = useState<any[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -31,6 +32,20 @@ export default function Home() {
     };
     fetchUserAndCredits();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      const fetchHistory = async () => {
+        const { data } = await supabase
+          .from("generations")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
+        if (data) setHistory(data);
+      };
+      fetchHistory();
+    }
+  }, [user]);
 
   const generate = async () => {
     if (credits <= 0) {
@@ -52,6 +67,13 @@ export default function Home() {
         .update({ credits: newCreditCount })
         .eq("id", user.id);
       setCredits(newCreditCount);
+
+      // 1. Save to the 'generations' table
+      await supabase.from("generations").insert({
+        user_id: user.id,
+        input_text: input,
+        output_json: { content: data }, // Store the text in a JSON block
+      });
     } catch (err) {
       alert("Error!");
     } finally {
@@ -294,11 +316,7 @@ export default function Home() {
     <main className="min-h-screen bg-[#030712] text-white selection:bg-blue-500/30">
       <nav className="p-6 border-b border-white/5 flex justify-between items-center backdrop-blur-md sticky top-0 z-50 bg-[#030712]/80">
         <div className="flex items-center gap-2">
-          <img
-            src="/ideogram.png"
-            alt="GitViral Logo"
-            className="w-10 sm:w-12 md:w-14 lg:w-16 h-auto object-contain"
-          />
+          <img src="/ideogram.png" alt="Logo" className="w-10 h-auto" />
           <span className="text-xl font-bold tracking-tighter">GitViral</span>
         </div>
         <div className="flex items-center gap-6">
@@ -317,40 +335,53 @@ export default function Home() {
       </nav>
 
       <div className="max-w-4xl mx-auto py-12 px-6">
-        <div className="mb-10 text-center sm:text-left">
-          <h2 className="text-4xl font-extrabold mb-2 tracking-tight">
-            Dashboard
-          </h2>
-          <p className="text-gray-400">
-            Transform your technical logic into viral marketing copy.
-          </p>
+        <div className="mb-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div className="text-center sm:text-left">
+            <h2 className="text-4xl font-extrabold mb-2 tracking-tight">
+              Dashboard
+            </h2>
+            <p className="text-gray-400">
+              Transform your technical logic into viral marketing copy.
+            </p>
+          </div>
+          <button
+            onClick={() =>
+              setInput(
+                "export async function generate() {\n  const res = await fetch(api);\n  // Optimize for sub-second speed\n  return res.json();\n}"
+              )
+            }
+            className="text-xs bg-white/5 border border-white/10 hover:bg-white/10 text-gray-300 px-4 py-2 rounded-xl transition"
+          >
+            ✨ Try with an Example
+          </button>
         </div>
 
-        <div className="bg-white/5 border border-white/10 p-1 rounded-3xl backdrop-blur-xl shadow-2xl overflow-hidden">
+        {/* INPUT BOX */}
+        <div className="bg-white/5 border border-white/10 p-1 rounded-3xl backdrop-blur-xl shadow-2xl overflow-hidden mb-20">
           <textarea
             className="w-full h-64 p-6 bg-transparent text-white placeholder:text-gray-700 outline-none resize-none text-lg border-none focus:ring-0"
-            placeholder="Paste your README.md or a specific code function here..."
+            placeholder="Paste your README.md or code here..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
           />
           <div className="p-4 bg-white/[0.02] border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <a
-              href="https://ko-fi.com/s/de1cb65423"
-              target="_blank"
-              className="text-sm text-blue-400 hover:text-blue-300 transition underline decoration-blue-400/30"
-            >
-              Refill credits
-            </a>
+            <div className="flex flex-col text-xs text-gray-500 uppercase tracking-widest font-bold">
+              <a
+                href="https://ko-fi.com/s/de1cb65423"
+                target="_blank"
+                className="text-blue-400 normal-case underline mb-1"
+              >
+                Refill credits
+              </a>
+              Manual delivery within 12h
+            </div>
             <button
               onClick={generate}
               disabled={loading || credits <= 0}
-              className="bg-blue-600 hover:bg-blue-500 disabled:bg-gray-800 text-white font-bold py-3 px-10 rounded-2xl transition-all active:scale-95 shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2"
+              className="bg-blue-600 hover:bg-blue-500 disabled:bg-gray-800 text-white font-bold py-3 px-10 rounded-2xl transition-all active:scale-95 shadow-lg shadow-blue-600/20 flex items-center gap-2"
             >
               {loading ? (
-                <>
-                  <Loader size={16} color="#fff" />
-                  <span>Crunching...</span>
-                </>
+                <Loader size={16} color="#fff" />
               ) : (
                 "Generate Viral Posts"
               )}
@@ -358,30 +389,130 @@ export default function Home() {
           </div>
         </div>
 
+        {/* CURRENT RESULT (Only shows while generating) */}
         {output && (
-          <div className="mt-12 space-y-6">
-            {output
-              .split("### ")
-              .filter(Boolean)
-              .map((post, index) => (
-                <div
-                  key={index}
-                  className="group bg-white/[0.03] border border-white/10 p-8 rounded-3xl relative hover:bg-white/[0.05] transition-all shadow-xl"
-                >
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText("### " + post);
-                      alert("Copied!");
-                    }}
-                    className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold"
+          <div className="mt-12 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="flex items-center gap-2 text-gray-500 text-sm font-bold uppercase tracking-widest px-2">
+              <div className="h-px bg-white/10 flex-1"></div>
+              Your Content is Ready
+              <div className="h-px bg-white/10 flex-1"></div>
+            </div>
+
+            {(() => {
+              // 1. Split and clean the blocks
+              const blocks = output.split("### ").filter(Boolean);
+              const grouped = [];
+
+              // 2. Group Title + Content into pairs
+              for (let i = 0; i < blocks.length; i += 2) {
+                grouped.push({
+                  title: blocks[i],
+                  content: blocks[i + 1] || "",
+                });
+              }
+
+              return grouped.map((post, index) => {
+                const isLinkedIn = post.title
+                  .toLowerCase()
+                  .includes("linkedin");
+                const fullText = "### " + post.content;
+                const shareText = encodeURIComponent(post.content);
+                const twitterUrl = `https://twitter.com/intent/tweet?text=${shareText}`;
+
+                return (
+                  <div
+                    key={index}
+                    className="group bg-white/[0.03] border border-white/10 rounded-[32px] overflow-hidden hover:bg-white/[0.05] transition-all hover:border-white/20 shadow-2xl"
                   >
-                    Copy Text
-                  </button>
-                  <div className="font-mono text-sm leading-relaxed text-gray-300">
-                    {"### " + post}
+                    {/* Header of the card */}
+                    <div className="bg-white/5 px-8 py-4 border-b border-white/5 flex justify-between items-center">
+                      <span className="text-xs font-bold uppercase tracking-[0.2em] text-blue-500">
+                        {post.title.replace("#", "")}
+                      </span>
+
+                      <div className="flex gap-2">
+                        {!isLinkedIn && (
+                          <a
+                            href={twitterUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="bg-white text-black hover:bg-gray-200 px-4 py-1.5 rounded-xl text-[10px] font-bold transition flex items-center gap-2"
+                          >
+                            <svg
+                              className="w-3 h-3"
+                              fill="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                            </svg>
+                            Post to X
+                          </a>
+                        )}
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(post.content);
+                            alert("Copied to clipboard!");
+                          }}
+                          className={`${
+                            isLinkedIn
+                              ? "bg-[#0077b5] hover:bg-[#005885]"
+                              : "bg-blue-600 hover:bg-blue-500"
+                          } text-white px-4 py-1.5 rounded-xl text-[10px] font-bold transition flex items-center gap-2`}
+                        >
+                          {isLinkedIn ? "Copy for LinkedIn" : "Copy Text"}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Body of the card */}
+                    <div className="p-8">
+                      <div className="font-mono text-sm leading-relaxed text-gray-300 whitespace-pre-wrap">
+                        {post.content}
+                      </div>
+                    </div>
                   </div>
+                );
+              });
+            })()}
+          </div>
+        )}
+
+        {/* HISTORY SECTION */}
+        {history.length > 0 && (
+          <div className="space-y-8">
+            <h3 className="text-gray-500 font-bold uppercase tracking-[0.2em] text-xs px-2 border-b border-white/5 pb-4">
+              Your Library ({history.length})
+            </h3>
+            {history.map((item, i) => (
+              <div
+                key={i}
+                className="bg-white/[0.02] border border-white/5 p-6 rounded-3xl opacity-60 hover:opacity-100 transition"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <span className="text-[10px] text-gray-600 font-mono italic">
+                    {new Date(item.created_at).toLocaleDateString()}
+                  </span>
+                  <button
+                    onClick={() => setInput(item.input_text)}
+                    className="text-[10px] text-blue-500 hover:underline"
+                  >
+                    Re-use Input
+                  </button>
                 </div>
-              ))}
+                <div className="font-mono text-xs line-clamp-3 text-gray-500 mb-4 whitespace-pre-wrap">
+                  {item.input_text}
+                </div>
+                <button
+                  onClick={() => {
+                    setOutput(item.output_json.content);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                  className="text-xs bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl border border-white/10 transition"
+                >
+                  View Result
+                </button>
+              </div>
+            ))}
           </div>
         )}
       </div>
