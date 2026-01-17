@@ -40,12 +40,28 @@ export default function Home() {
           .from("generations")
           .select("*")
           .eq("user_id", user.id)
-          .order("created_at", { ascending: false });
+          .order("created_at", { ascending: false })
+          .limit(3); // ONLY FETCH 3 FOR THE DASHBOARD
         if (data) setHistory(data);
       };
       fetchHistory();
     }
   }, [user]);
+
+  useEffect(() => {
+    const savedInput = localStorage.getItem("restore_input");
+    const savedOutput = localStorage.getItem("restore_output");
+
+    if (savedInput && savedOutput) {
+      setInput(savedInput);
+      setOutput(savedOutput);
+
+      // CRITICAL: Clear the memory after restoring
+      // so it doesn't keep popping up every time you refresh
+      localStorage.removeItem("restore_input");
+      localStorage.removeItem("restore_output");
+    }
+  }, []);
 
   const generate = async () => {
     if (credits <= 0) {
@@ -399,80 +415,75 @@ export default function Home() {
             </div>
 
             {(() => {
-              // 1. Split and clean the blocks
-              const blocks = output.split("### ").filter(Boolean);
-              const grouped = [];
+              try {
+                // Parse the JSON coming from the AI
+                const parsed = JSON.parse(output);
 
-              // 2. Group Title + Content into pairs
-              for (let i = 0; i < blocks.length; i += 2) {
-                grouped.push({
-                  title: blocks[i],
-                  content: blocks[i + 1] || "",
-                });
-              }
+                return parsed.posts.map((post: any, index: number) => {
+                  const isLinkedIn = post.platform === "LinkedIn";
+                  const shareText = encodeURIComponent(post.content);
+                  const twitterUrl = `https://twitter.com/intent/tweet?text=${shareText}`;
 
-              return grouped.map((post, index) => {
-                const isLinkedIn = post.title
-                  .toLowerCase()
-                  .includes("linkedin");
-                const fullText = "### " + post.content;
-                const shareText = encodeURIComponent(post.content);
-                const twitterUrl = `https://twitter.com/intent/tweet?text=${shareText}`;
+                  return (
+                    <div
+                      key={index}
+                      className="group bg-white/[0.03] border border-white/10 rounded-[32px] overflow-hidden hover:bg-white/[0.05] transition-all hover:border-white/20 shadow-2xl"
+                    >
+                      {/* Header Bar */}
+                      <div className="bg-white/5 px-8 py-4 border-b border-white/5 flex justify-between items-center">
+                        <span className="text-xs font-bold uppercase tracking-[0.2em] text-blue-500">
+                          {post.title}
+                        </span>
 
-                return (
-                  <div
-                    key={index}
-                    className="group bg-white/[0.03] border border-white/10 rounded-[32px] overflow-hidden hover:bg-white/[0.05] transition-all hover:border-white/20 shadow-2xl"
-                  >
-                    {/* Header of the card */}
-                    <div className="bg-white/5 px-8 py-4 border-b border-white/5 flex justify-between items-center">
-                      <span className="text-xs font-bold uppercase tracking-[0.2em] text-blue-500">
-                        {post.title.replace("#", "")}
-                      </span>
-
-                      <div className="flex gap-2">
-                        {!isLinkedIn && (
-                          <a
-                            href={twitterUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="bg-white text-black hover:bg-gray-200 px-4 py-1.5 rounded-xl text-[10px] font-bold transition flex items-center gap-2"
-                          >
-                            <svg
-                              className="w-3 h-3"
-                              fill="currentColor"
-                              viewBox="0 0 24 24"
+                        <div className="flex gap-2">
+                          {!isLinkedIn && (
+                            <a
+                              href={twitterUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="bg-white text-black hover:bg-gray-200 px-4 py-1.5 rounded-xl text-[10px] font-bold transition flex items-center gap-2"
                             >
-                              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                            </svg>
-                            Post to X
-                          </a>
-                        )}
-                        <button
-                          onClick={() => {
-                            navigator.clipboard.writeText(post.content);
-                            alert("Copied to clipboard!");
-                          }}
-                          className={`${
-                            isLinkedIn
-                              ? "bg-[#0077b5] hover:bg-[#005885]"
-                              : "bg-blue-600 hover:bg-blue-500"
-                          } text-white px-4 py-1.5 rounded-xl text-[10px] font-bold transition flex items-center gap-2`}
-                        >
-                          {isLinkedIn ? "Copy for LinkedIn" : "Copy Text"}
-                        </button>
+                              <svg
+                                className="w-3 h-3"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                              </svg>
+                              Post to X
+                            </a>
+                          )}
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(post.content);
+                              alert("Copied to clipboard!");
+                            }}
+                            className={`${
+                              isLinkedIn ? "bg-[#0077b5]" : "bg-blue-600"
+                            } text-white px-4 py-1.5 rounded-xl text-[10px] font-bold transition`}
+                          >
+                            {isLinkedIn ? "Copy for LinkedIn" : "Copy Text"}
+                          </button>
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Body of the card */}
-                    <div className="p-8">
-                      <div className="font-mono text-sm leading-relaxed text-gray-300 whitespace-pre-wrap">
-                        {post.content}
+                      {/* Content Body */}
+                      <div className="p-8">
+                        <div className="font-mono text-sm leading-relaxed text-gray-300 whitespace-pre-wrap">
+                          {post.content}
+                        </div>
                       </div>
                     </div>
+                  );
+                });
+              } catch (e) {
+                // Fallback in case AI output is messy
+                return (
+                  <div className="text-red-500 p-4">
+                    Error parsing AI response. Please try again.
                   </div>
                 );
-              });
+              }
             })()}
           </div>
         )}
@@ -513,6 +524,18 @@ export default function Home() {
                 </button>
               </div>
             ))}
+          </div>
+        )}
+
+        {history.length > 0 && (
+          <div className="mt-8 text-center">
+            <button
+              onClick={() => router.push("/history")}
+              className="text-sm text-blue-400 hover:text-blue-300 font-medium flex items-center justify-center gap-2 mx-auto"
+            >
+              View Full History ({history.length}+)
+              <span>→</span>
+            </button>
           </div>
         )}
       </div>
