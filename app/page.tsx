@@ -419,7 +419,7 @@ export default function Home() {
                 Get 20 more credits ($10) →
               </a>
               <span className="text-[9px] text-gray-500 mt-1 uppercase tracking-widest font-bold">
-                Manual delivery within 12h
+                INSTANT AUTOMATED DELIVERY ⚡
               </span>
             </div>
             <button
