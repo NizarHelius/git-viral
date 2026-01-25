@@ -103,7 +103,16 @@ export default function Home() {
         <Loader size={56} color="#ffffff" />
       </div>
     );
-
+  const fillSample = (type: string) => {
+    const samples: any = {
+      react:
+        "# Modern UI Component Library\nA collection of high-performance, accessible React components built with Tailwind CSS and Framer Motion.",
+      python:
+        "# FastAPI Data Scraper\nAn asynchronous web scraper designed to extract real-time market data from multiple sources with high efficiency.",
+      api: "# Node.js Stripe Wrapper\nA lightweight wrapper for the Stripe API to handle complex subscriptions, webhooks, and tax calculations with ease.",
+    };
+    setInput(samples[type]);
+  };
   // --- LANDING PAGE (Logged Out) ---
   if (!user) {
     return (
@@ -363,7 +372,7 @@ export default function Home() {
           <button
             onClick={() =>
               setInput(
-                "export async function generate() {\n  const res = await fetch(api);\n  // Optimize for sub-second speed\n  return res.json();\n}"
+                "export async function generate() {\n  const res = await fetch(api);\n  // Optimize for sub-second speed\n  return res.json();\n}",
               )
             }
             className="text-xs bg-white/5 border border-white/10 hover:bg-white/10 text-gray-300 px-4 py-2 rounded-xl transition"
@@ -380,16 +389,38 @@ export default function Home() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
           />
+          <div className="flex gap-2 px-6 pb-4">
+            <button
+              onClick={() => fillSample("react")}
+              className="text-[10px] bg-white/5 border border-white/10 hover:bg-white/10 px-3 py-1 rounded-full text-gray-400 transition"
+            >
+              ⚡ React UI
+            </button>
+            <button
+              onClick={() => fillSample("python")}
+              className="text-[10px] bg-white/5 border border-white/10 hover:bg-white/10 px-3 py-1 rounded-full text-gray-400 transition"
+            >
+              📦 Python CLI
+            </button>
+            <button
+              onClick={() => fillSample("api")}
+              className="text-[10px] bg-white/5 border border-white/10 hover:bg-white/10 px-3 py-1 rounded-full text-gray-400 transition"
+            >
+              🔥 API Wrapper
+            </button>
+          </div>
           <div className="p-4 bg-white/[0.02] border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div className="flex flex-col text-xs text-gray-500 uppercase tracking-widest font-bold">
+            <div className="flex flex-col">
               <a
                 href="https://ko-fi.com/s/de1cb65423"
                 target="_blank"
-                className="text-blue-400 normal-case underline mb-1"
+                className="text-sm text-amber-400 font-bold hover:text-amber-300 transition underline decoration-amber-400/30"
               >
-                Refill credits
+                Get 20 more credits ($10) →
               </a>
-              Manual delivery within 12h
+              <span className="text-[9px] text-gray-500 mt-1 uppercase tracking-widest font-bold">
+                Manual delivery within 12h
+              </span>
             </div>
             <button
               onClick={generate}
