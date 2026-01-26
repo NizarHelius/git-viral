@@ -17,8 +17,8 @@ export default function Nav({ loggedIn = false, credits }: Props) {
   };
 
   return (
-    <nav className="site-nav fixed top-0 left-0 right-0 z-50 backdrop-blur-sm">
-      <div className="max-w-6xl mx-auto px-4 flex items-center justify-between">
+    <nav className="fixed top-0 left-0 right-0 z-50 h-16 bg-gray-900/50 backdrop-blur-sm">
+      <div className="flex items-center justify-between h-full max-w-6xl px-4 mx-auto">
         <div
           onClick={() => router.push("/")}
           className="flex items-center gap-3 cursor-pointer select-none"
@@ -26,7 +26,7 @@ export default function Nav({ loggedIn = false, credits }: Props) {
           <img
             src="/ideogram.png"
             alt="GitViral Logo"
-            className="w-10 sm:w-12 md:w-14 lg:w-16 h-auto object-contain"
+            className="object-contain h-10 w-10" // Simplified sizing
           />
           <span className="text-xl font-bold tracking-tighter">GitViral</span>
         </div>

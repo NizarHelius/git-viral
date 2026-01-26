@@ -4,7 +4,6 @@ import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Loader from "./components/Loader";
 import Footer from "./components/footer";
-import { auto } from "groq-sdk/_shims/registry.mjs";
 
 export default function Home() {
   const [input, setInput] = useState("");
@@ -16,8 +15,9 @@ export default function Home() {
   const [history, setHistory] = useState<any[]>([]);
   const router = useRouter();
 
+  // 1. Auth & Data Fetching
   useEffect(() => {
-    const fetchUserAndCredits = async () => {
+    const fetchUserAndData = async () => {
       const { data } = await supabase.auth.getUser();
       if (data.user) {
         setUser(data.user);
@@ -27,47 +27,44 @@ export default function Home() {
           .eq("id", data.user.id)
           .single();
         if (profile) setCredits(profile.credits);
+
+        const { data: historyData } = await supabase
+          .from("generations")
+          .select("*")
+          .eq("user_id", data.user.id)
+          .order("created_at", { ascending: false })
+          .limit(3);
+        if (historyData) setHistory(historyData);
       }
       setCheckingAuth(false);
     };
-    fetchUserAndCredits();
+    fetchUserAndData();
   }, []);
 
-  useEffect(() => {
-    if (user) {
-      const fetchHistory = async () => {
-        const { data } = await supabase
-          .from("generations")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(3); // ONLY FETCH 3 FOR THE DASHBOARD
-        if (data) setHistory(data);
-      };
-      fetchHistory();
-    }
-  }, [user]);
+  // 2. Logic to Fill Sample
+  const fillSample = (type: string) => {
+    const samples: any = {
+      react:
+        "# Modern UI Library\nHigh-performance React components built with Tailwind CSS.",
+      python:
+        "# FastAPI Scraper\nAsync web scraper designed to extract real-time market data.",
+      api: "# Stripe Wrapper\nA lightweight wrapper for the Stripe API to handle subscriptions.",
+    };
+    setInput(samples[type]);
+  };
 
-  useEffect(() => {
-    const savedInput = localStorage.getItem("restore_input");
-    const savedOutput = localStorage.getItem("restore_output");
-
-    if (savedInput && savedOutput) {
-      setInput(savedInput);
-      setOutput(savedOutput);
-
-      // CRITICAL: Clear the memory after restoring
-      // so it doesn't keep popping up every time you refresh
-      localStorage.removeItem("restore_input");
-      localStorage.removeItem("restore_output");
-    }
-  }, []);
-
+  // 3. Generation Logic (Works for both Demo and Logged In)
   const generate = async () => {
-    if (credits <= 0) {
+    if (!user && output) {
+      router.push("/login?mode=register");
+      return;
+    }
+
+    if (user && credits <= 0) {
       alert("Out of credits!");
       return;
     }
+
     setLoading(true);
     try {
       const res = await fetch("/api/generate", {
@@ -77,21 +74,22 @@ export default function Home() {
       });
       const { data } = await res.json();
       setOutput(data);
-      const newCreditCount = credits - 1;
-      await supabase
-        .from("profiles")
-        .update({ credits: newCreditCount })
-        .eq("id", user.id);
-      setCredits(newCreditCount);
 
-      // 1. Save to the 'generations' table
-      await supabase.from("generations").insert({
-        user_id: user.id,
-        input_text: input,
-        output_json: { content: data }, // Store the text in a JSON block
-      });
+      if (user) {
+        const newCreditCount = credits - 1;
+        await supabase
+          .from("profiles")
+          .update({ credits: newCreditCount })
+          .eq("id", user.id);
+        setCredits(newCreditCount);
+        await supabase.from("generations").insert({
+          user_id: user.id,
+          input_text: input,
+          output_json: { content: data },
+        });
+      }
     } catch (err) {
-      alert("Error!");
+      alert("Error generating content!");
     } finally {
       setLoading(false);
     }
@@ -99,26 +97,17 @@ export default function Home() {
 
   if (checkingAuth)
     return (
-      <div className="min-h-screen bg-[#030712] flex items-center justify-center">
-        <Loader size={56} color="#ffffff" />
+      <div className="min-h-screen bg-[#030712] flex items-center justify-center text-white text-2xl animate-pulse font-bold">
+        GitViral 🚀
       </div>
     );
-  const fillSample = (type: string) => {
-    const samples: any = {
-      react:
-        "# Modern UI Component Library\nA collection of high-performance, accessible React components built with Tailwind CSS and Framer Motion.",
-      python:
-        "# FastAPI Data Scraper\nAn asynchronous web scraper designed to extract real-time market data from multiple sources with high efficiency.",
-      api: "# Node.js Stripe Wrapper\nA lightweight wrapper for the Stripe API to handle complex subscriptions, webhooks, and tax calculations with ease.",
-    };
-    setInput(samples[type]);
-  };
-  // --- LANDING PAGE (Logged Out) ---
+
+  // --- STUNNING LANDING PAGE (Logged Out) ---
   if (!user) {
     return (
       <main className="min-h-screen bg-[#030712] text-white selection:bg-blue-500/30 overflow-hidden relative">
-        {/* --- TOP ANNOUNCEMENT BANNER --- */}
-        <div className="relative z-[60] bg-blue-600 text-white py-3 px-4 shadow-2xl">
+        {/* --- PRODUCT HUNT BANNER --- */}
+        <div className="relative z-[70] bg-blue-600 text-white py-3 px-4 shadow-2xl">
           <div className="max-w-6xl mx-auto flex items-center justify-center gap-3 text-sm font-bold">
             <span className="flex h-2 w-2 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
@@ -134,6 +123,9 @@ export default function Home() {
             </a>
           </div>
         </div>
+
+        {/* Background Glows */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-blue-600/10 blur-[120px] rounded-full -z-10" />
 
         {/* --- STICKY NAVBAR --- */}
         <nav className="p-8 flex justify-between items-center max-w-6xl mx-auto backdrop-blur-md sticky top-0 left-0 right-0 z-50 bg-[#030712]/50">
@@ -167,30 +159,113 @@ export default function Home() {
           </div>
         </nav>
 
-        {/* --- HERO SECTION --- */}
-        {/* Reduced the padding-top from 48 to 24 because sticky nav takes up space now */}
-        <header className="pt-24 pb-20 px-6 text-center max-w-4xl mx-auto relative">
-          {/* Rest of your header code... */}
+        <header className="pt-32 pb-20 px-6 text-center max-w-4xl mx-auto relative">
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-8 bg-gradient-to-b from-white to-gray-400 bg-clip-text text-transparent leading-tight">
             Your README is a <br />{" "}
             <span className="text-blue-500">marketing goldmine.</span>
           </h1>
           <p className="text-lg md:text-xl text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed">
-            Stop wasting hours writing LinkedIn threads. Paste your code, get 3
-            viral posts, and get back to the terminal.
+            Stop wasting hours on social copy. Paste your code, get viral posts,
+            and get back to your terminal.
           </p>
-
-          {/* --- HERO CTA BUTTONS --- */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button
-              onClick={() => router.push("/login?mode=register")}
-              className="bg-blue-600 text-white px-6 sm:px-10 py-4 rounded-2xl font-bold shadow-lg shadow-blue-600/20 hover:scale-105 transition"
-            >
-              Join for Free →
-            </button>
-          </div>
         </header>
 
+        {/* --- PLAYGROUND --- */}
+        <section className="max-w-4xl mx-auto px-6 mb-40 relative">
+          <div className="bg-white/5 border border-white/10 rounded-[40px] p-1.5 backdrop-blur-3xl shadow-2xl overflow-hidden focus-within:border-blue-500/40 transition-all duration-500">
+            <div className="bg-[#030712]/80 rounded-[36px] overflow-hidden">
+              <textarea
+                className="w-full h-48 p-8 bg-transparent text-white placeholder:text-gray-700 outline-none resize-none text-lg border-none focus:ring-0"
+                placeholder="Paste your README.md here to see the magic..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+              />
+
+              <div className="px-8 pb-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => fillSample("react")}
+                    className="text-[10px] bg-white/5 border border-white/10 px-4 py-2 rounded-full text-gray-400 transition hover:bg-white/10 hover:text-white"
+                  >
+                    ⚡ React Example
+                  </button>
+                  <button
+                    onClick={() => fillSample("python")}
+                    className="text-[10px] bg-white/5 border border-white/10 px-4 py-2 rounded-full text-gray-400 transition hover:bg-white/10 hover:text-white"
+                  >
+                    📦 Python Example
+                  </button>
+                </div>
+
+                <button
+                  onClick={generate}
+                  disabled={loading}
+                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-10 rounded-2xl transition-all shadow-lg shadow-blue-600/20 active:scale-95 flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <Loader size={16} color="#fff" />
+                  ) : output ? (
+                    "Unlock Full Results →"
+                  ) : (
+                    "Generate Free Preview"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* RESULTS WITH SHARP BUTTONS */}
+          {output && (
+            <div className="mt-12 space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+              {JSON.parse(output).posts.map((post: any, index: number) => {
+                const isLocked = index > 0; // Lock the 2nd and 3rd posts
+
+                return (
+                  <div
+                    key={index}
+                    className="group bg-white/[0.03] border border-white/10 rounded-[32px] relative overflow-hidden transition-all hover:border-white/20"
+                  >
+                    {/* HEADER */}
+                    <div className="bg-white/5 px-8 py-4 border-b border-white/5">
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-blue-500">
+                        {post.title}
+                      </div>
+                    </div>
+
+                    {/* CONTENT AREA */}
+                    <div className="p-8 relative">
+                      {/* THE TEXT (This gets blurred if locked) */}
+                      <div
+                        className={`font-mono text-sm leading-relaxed text-gray-400 whitespace-pre-wrap transition-all ${isLocked ? "blur-[8px] select-none opacity-40" : ""}`}
+                      >
+                        {post.content}
+                      </div>
+
+                      {/* THE OVERLAY (Only shows for locked posts) */}
+                      {isLocked && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#030712]/10 z-30 backdrop-blur-[2px]">
+                          <div className="bg-blue-600/10 border border-blue-500/20 p-6 rounded-3xl flex flex-col items-center shadow-2xl">
+                            <span className="text-[10px] font-bold text-blue-400 uppercase tracking-tighter mb-3">
+                              Full Access Required
+                            </span>
+                            <button
+                              onClick={() =>
+                                router.push("/login?mode=register")
+                              }
+                              className="bg-white text-black px-8 py-3 rounded-2xl text-xs font-black shadow-[0_0_30px_rgba(255,255,255,0.3)] hover:scale-105 active:scale-95 transition"
+                            >
+                              UNLOCK WITH 3 FREE CREDITS →
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
         {/* --- VALUE PROPOSITION SECTION --- */}
         <section className="max-w-6xl mx-auto px-6 py-24 border-t border-white/5 relative">
           <div className="text-center mb-16">
@@ -329,14 +404,13 @@ export default function Home() {
             </button>
           </div>
         </section>
-
-        {/* --- FOOTER --- */}
+        {/* Existing Sections Below... */}
         <Footer />
       </main>
     );
   }
 
-  // --- PRO DASHBOARD (Logged In) ---
+  // --- PRO DASHBOARD (LOGGED IN) ---
   return (
     <main className="min-h-screen bg-[#030712] text-white selection:bg-blue-500/30">
       <nav className="p-6 border-b border-white/5 flex justify-between items-center backdrop-blur-md sticky top-0 z-50 bg-[#030712]/80">
@@ -345,8 +419,14 @@ export default function Home() {
           <span className="text-xl font-bold tracking-tighter">GitViral</span>
         </div>
         <div className="flex items-center gap-6">
+          <button
+            onClick={() => router.push("/history")}
+            className="text-sm text-gray-500 hover:text-white transition"
+          >
+            Library
+          </button>
           <div className="bg-white/5 border border-white/10 px-4 py-1.5 rounded-full text-blue-400 text-sm font-bold">
-            {credits} Credits Left
+            {credits} Credits
           </div>
           <button
             onClick={() =>
@@ -361,7 +441,7 @@ export default function Home() {
 
       <div className="max-w-4xl mx-auto py-12 px-6">
         <div className="mb-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div className="text-center sm:text-left">
+          <div>
             <h2 className="text-4xl font-extrabold mb-2 tracking-tight">
               Dashboard
             </h2>
@@ -370,46 +450,21 @@ export default function Home() {
             </p>
           </div>
           <button
-            onClick={() =>
-              setInput(
-                "export async function generate() {\n  const res = await fetch(api);\n  // Optimize for sub-second speed\n  return res.json();\n}",
-              )
-            }
+            onClick={() => fillSample("react")}
             className="text-xs bg-white/5 border border-white/10 hover:bg-white/10 text-gray-300 px-4 py-2 rounded-xl transition"
           >
-            ✨ Try with an Example
+            ✨ Try Sample
           </button>
         </div>
 
-        {/* INPUT BOX */}
-        <div className="bg-white/5 border border-white/10 p-1 rounded-3xl backdrop-blur-xl shadow-2xl overflow-hidden mb-20">
+        <div className="bg-white/5 border border-white/10 p-1 rounded-3xl backdrop-blur-xl shadow-2xl overflow-hidden mb-12">
           <textarea
             className="w-full h-64 p-6 bg-transparent text-white placeholder:text-gray-700 outline-none resize-none text-lg border-none focus:ring-0"
-            placeholder="Paste your README.md or code here..."
+            placeholder="Paste your README or code..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
           />
-          <div className="flex gap-2 px-6 pb-4">
-            <button
-              onClick={() => fillSample("react")}
-              className="text-[10px] bg-white/5 border border-white/10 hover:bg-white/10 px-3 py-1 rounded-full text-gray-400 transition"
-            >
-              ⚡ React UI
-            </button>
-            <button
-              onClick={() => fillSample("python")}
-              className="text-[10px] bg-white/5 border border-white/10 hover:bg-white/10 px-3 py-1 rounded-full text-gray-400 transition"
-            >
-              📦 Python CLI
-            </button>
-            <button
-              onClick={() => fillSample("api")}
-              className="text-[10px] bg-white/5 border border-white/10 hover:bg-white/10 px-3 py-1 rounded-full text-gray-400 transition"
-            >
-              🔥 API Wrapper
-            </button>
-          </div>
-          <div className="p-4 bg-white/[0.02] border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="p-4 bg-white/[0.02] border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4 text-center">
             <div className="flex flex-col">
               <a
                 href="https://ko-fi.com/s/de1cb65423"
@@ -425,7 +480,7 @@ export default function Home() {
             <button
               onClick={generate}
               disabled={loading || credits <= 0}
-              className="bg-blue-600 hover:bg-blue-500 disabled:bg-gray-800 text-white font-bold py-3 px-10 rounded-2xl transition-all active:scale-95 shadow-lg shadow-blue-600/20 flex items-center gap-2"
+              className="bg-blue-600 hover:bg-blue-500 disabled:bg-gray-800 text-white font-bold py-3 px-10 rounded-2xl transition-all shadow-lg shadow-blue-600/20 active:scale-95"
             >
               {loading ? (
                 <Loader size={16} color="#fff" />
@@ -436,137 +491,48 @@ export default function Home() {
           </div>
         </div>
 
-        {/* CURRENT RESULT (Only shows while generating) */}
         {output && (
-          <div className="mt-12 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="flex items-center gap-2 text-gray-500 text-sm font-bold uppercase tracking-widest px-2">
-              <div className="h-px bg-white/10 flex-1"></div>
-              Your Content is Ready
-              <div className="h-px bg-white/10 flex-1"></div>
-            </div>
-
-            {(() => {
-              try {
-                // Parse the JSON coming from the AI
-                const parsed = JSON.parse(output);
-
-                return parsed.posts.map((post: any, index: number) => {
-                  const isLinkedIn = post.platform === "LinkedIn";
-                  const shareText = encodeURIComponent(post.content);
-                  const twitterUrl = `https://twitter.com/intent/tweet?text=${shareText}`;
-
-                  return (
-                    <div
-                      key={index}
-                      className="group bg-white/[0.03] border border-white/10 rounded-[32px] overflow-hidden hover:bg-white/[0.05] transition-all hover:border-white/20 shadow-2xl"
-                    >
-                      {/* Header Bar */}
-                      <div className="bg-white/5 px-8 py-4 border-b border-white/5 flex justify-between items-center">
-                        <span className="text-xs font-bold uppercase tracking-[0.2em] text-blue-500">
-                          {post.title}
-                        </span>
-
-                        <div className="flex gap-2">
-                          {!isLinkedIn && (
-                            <a
-                              href={twitterUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="bg-white text-black hover:bg-gray-200 px-4 py-1.5 rounded-xl text-[10px] font-bold transition flex items-center gap-2"
-                            >
-                              <svg
-                                className="w-3 h-3"
-                                fill="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                              </svg>
-                              Post to X
-                            </a>
-                          )}
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText(post.content);
-                              alert("Copied to clipboard!");
-                            }}
-                            className={`${
-                              isLinkedIn ? "bg-[#0077b5]" : "bg-blue-600"
-                            } text-white px-4 py-1.5 rounded-xl text-[10px] font-bold transition`}
-                          >
-                            {isLinkedIn ? "Copy for LinkedIn" : "Copy Text"}
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Content Body */}
-                      <div className="p-8">
-                        <div className="font-mono text-sm leading-relaxed text-gray-300 whitespace-pre-wrap">
-                          {post.content}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                });
-              } catch (e) {
-                // Fallback in case AI output is messy
-                return (
-                  <div className="text-red-500 p-4">
-                    Error parsing AI response. Please try again.
-                  </div>
-                );
-              }
-            })()}
-          </div>
-        )}
-
-        {/* HISTORY SECTION */}
-        {history.length > 0 && (
-          <div className="space-y-8">
-            <h3 className="text-gray-500 font-bold uppercase tracking-[0.2em] text-xs px-2 border-b border-white/5 pb-4">
-              Your Library ({history.length})
-            </h3>
-            {history.map((item, i) => (
-              <div
-                key={i}
-                className="bg-white/[0.02] border border-white/5 p-6 rounded-3xl opacity-60 hover:opacity-100 transition"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <span className="text-[10px] text-gray-600 font-mono italic">
-                    {new Date(item.created_at).toLocaleDateString()}
-                  </span>
-                  <button
-                    onClick={() => setInput(item.input_text)}
-                    className="text-[10px] text-blue-500 hover:underline"
-                  >
-                    Re-use Input
-                  </button>
-                </div>
-                <div className="font-mono text-xs line-clamp-3 text-gray-500 mb-4 whitespace-pre-wrap">
-                  {item.input_text}
-                </div>
-                <button
-                  onClick={() => {
-                    setOutput(item.output_json.content);
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  }}
-                  className="text-xs bg-white/5 hover:bg-white/10 px-4 py-2 rounded-xl border border-white/10 transition"
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {JSON.parse(output).posts.map((post: any, index: number) => {
+              const isLinkedIn = post.platform === "LinkedIn";
+              const shareText = encodeURIComponent(post.content);
+              const twitterUrl = `https://twitter.com/intent/tweet?text=${shareText}`;
+              return (
+                <div
+                  key={index}
+                  className="group bg-white/[0.03] border border-white/10 rounded-[32px] overflow-hidden hover:bg-white/[0.05] transition shadow-2xl"
                 >
-                  View Result
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {history.length > 0 && (
-          <div className="mt-8 text-center">
-            <button
-              onClick={() => router.push("/history")}
-              className="text-sm text-blue-400 hover:text-blue-300 font-medium flex items-center justify-center gap-2 mx-auto"
-            >
-              View Full History ({history.length}+)
-              <span>→</span>
-            </button>
+                  <div className="bg-white/5 px-8 py-4 border-b border-white/5 flex justify-between items-center">
+                    <span className="text-xs font-bold text-blue-500 uppercase tracking-widest">
+                      {post.title}
+                    </span>
+                    <div className="flex gap-2">
+                      {!isLinkedIn && (
+                        <a
+                          href={twitterUrl}
+                          target="_blank"
+                          className="bg-white text-black px-4 py-1.5 rounded-xl text-[10px] font-bold"
+                        >
+                          Post to X
+                        </a>
+                      )}
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(post.content);
+                          alert("Copied!");
+                        }}
+                        className={`px-4 py-1.5 rounded-xl text-[10px] font-bold text-white ${isLinkedIn ? "bg-[#0077b5]" : "bg-blue-600"}`}
+                      >
+                        {isLinkedIn ? "Copy for LinkedIn" : "Copy Text"}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="p-8 font-mono text-sm text-gray-300 whitespace-pre-wrap">
+                    {post.content}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
