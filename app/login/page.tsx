@@ -107,7 +107,7 @@ function AuthContent() {
               <span>Processing...</span>
             </>
           ) : isRegister ? (
-            "Create Account & Verify"
+            "Create Account & Start →"
           ) : (
             "Login Immediately"
           )}
