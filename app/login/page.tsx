@@ -30,12 +30,16 @@ function AuthContent() {
     setMessage("");
 
     if (isRegister) {
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) alert(error.message);
-      else
-        setMessage(
-          "Account created! Please check your email to confirm and log in."
-        );
+      // --- JOIN LOGIC (INSTANT ENTRY) ---
+      const { data, error } = await supabase.auth.signUp({ email, password });
+
+      if (error) {
+        alert(error.message);
+      } else {
+        // If email confirmation is OFF, data.user exists and they are logged in.
+        // We send them straight to the dashboard.
+        router.push("/");
+      }
     } else {
       const { error } = await supabase.auth.signInWithPassword({
         email,
