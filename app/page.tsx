@@ -6,6 +6,7 @@ import Loader from "./components/Loader";
 import Footer from "./components/footer";
 
 export default function Home() {
+  const [announcement, setAnnouncement] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,10 +24,13 @@ export default function Home() {
         setUser(data.user);
         const { data: profile } = await supabase
           .from("profiles")
-          .select("credits")
+          .select("credits, message")
           .eq("id", data.user.id)
           .single();
-        if (profile) setCredits(profile.credits);
+        if (profile) {
+          setCredits(profile.credits);
+          if (profile.message) setAnnouncement(profile.message);
+        }
 
         const { data: historyData } = await supabase
           .from("generations")
@@ -40,6 +44,25 @@ export default function Home() {
     };
     fetchUserAndData();
   }, []);
+
+  // 1.5 Referrer Tracker
+  useEffect(() => {
+    // Check if we already have a source saved
+    const existingSource = localStorage.getItem("entry_source");
+
+    if (!existingSource) {
+      // Capture where they came from
+      const source = document.referrer || "direct";
+      localStorage.setItem("entry_source", source);
+      console.log("User entered from:", source);
+    }
+  }, []);
+
+  // 1.6 Dismiss Message
+  const dismissMessage = async () => {
+    setAnnouncement(null);
+    await supabase.from("profiles").update({ message: null }).eq("id", user.id);
+  };
 
   // 2. Logic to Fill Sample
   const fillSample = (type: string) => {
@@ -440,6 +463,24 @@ export default function Home() {
       </nav>
 
       <div className="max-w-4xl mx-auto py-12 px-6">
+        {announcement && (
+          <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="bg-blue-600/10 border border-blue-500/30 p-4 rounded-2xl flex items-center justify-between gap-4 backdrop-blur-xl shadow-[0_0_20px_rgba(37,99,235,0.1)]">
+              <div className="flex items-center gap-3">
+                <span className="text-xl">🔔</span>
+                <p className="text-sm font-medium text-blue-100">
+                  {announcement}
+                </p>
+              </div>
+              <button
+                onClick={dismissMessage}
+                className="text-blue-400 hover:text-white transition text-xs font-bold whitespace-nowrap"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        )}
         <div className="mb-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <h2 className="text-4xl font-extrabold mb-2 tracking-tight">
