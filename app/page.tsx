@@ -182,15 +182,52 @@ export default function Home() {
           </div>
         </nav>
 
-        <header className="pt-32 pb-20 px-6 text-center max-w-4xl mx-auto relative">
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-8 bg-gradient-to-b from-white to-gray-400 bg-clip-text text-transparent leading-tight">
+        {/* --- HERO SECTION --- */}
+        <header className="pt-12 pb-20 px-6 text-center max-w-4xl mx-auto relative">
+          {/* The "Trend" Badge */}
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-bold uppercase tracking-widest mb-6">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+            </span>
+            Now Optimized with DeepSeek-V3
+          </div>
+
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 bg-gradient-to-b from-white to-gray-400 bg-clip-text text-transparent leading-tight">
             Your README is a <br />{" "}
-            <span className="text-blue-500">marketing goldmine.</span>
+            <span className="text-blue-500 font-black italic">
+              marketing goldmine.
+            </span>
           </h1>
-          <p className="text-lg md:text-xl text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed">
-            Stop wasting hours on social copy. Paste your code, get viral posts,
-            and get back to your terminal.
+
+          <p className="text-lg md:text-xl text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed font-medium">
+            Stop wasting hours on social copy. Get technical viral posts in
+            seconds using{" "}
+            <span className="text-white border-b border-blue-500/50">
+              Llama 3.3
+            </span>{" "}
+            and{" "}
+            <span className="text-white border-b border-blue-500/50">
+              DeepSeek
+            </span>
+            .
           </p>
+
+          {/* Hero CTA Buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button
+              onClick={() => router.push("/login?mode=register")}
+              className="bg-blue-600 text-white px-10 py-4 rounded-2xl font-bold shadow-lg shadow-blue-600/20 hover:scale-105 transition active:scale-95"
+            >
+              Join for Free →
+            </button>
+            <button
+              onClick={() => router.push("/login")}
+              className="bg-white/5 border border-white/10 text-white px-10 py-4 rounded-2xl font-bold hover:bg-white/10 transition"
+            >
+              Login
+            </button>
+          </div>
         </header>
 
         {/* --- PLAYGROUND --- */}
@@ -289,6 +326,29 @@ export default function Home() {
             </div>
           )}
         </section>
+        {/* --- TRUST BAR --- */}
+        <div className="mt-16 flex flex-col items-center gap-6 animate-in fade-in duration-1000 delay-500 pb-20 pt-12 border-t border-white/5">
+          <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-gray-500">
+            Trusted by developers from
+          </p>
+          <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-30 grayscale brightness-200 contrast-125">
+            <div className="flex items-center gap-2">
+              <span className="font-black text-xl tracking-tighter">
+                GitHub
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="font-black text-xl tracking-tighter italic text-blue-400">
+                DuckDuckGo
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="font-black text-xl tracking-tighter">
+                Vercel
+              </span>
+            </div>
+          </div>
+        </div>
         {/* --- VALUE PROPOSITION SECTION --- */}
         <section className="max-w-6xl mx-auto px-6 py-24 border-t border-white/5 relative">
           <div className="text-center mb-16">
