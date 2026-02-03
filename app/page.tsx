@@ -552,6 +552,36 @@ export default function Home() {
         )}
         <div className="mb-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
+            {/* --- $5 LAUNCH SPECIAL BANNER --- */}
+            <div className="mb-10 animate-in fade-in slide-in-from-top-4 duration-1000 delay-200">
+              <div className="bg-gradient-to-r from-amber-500/10 via-amber-500/20 to-amber-500/10 border border-amber-500/30 p-4 rounded-[28px] flex flex-col sm:flex-row items-center justify-between gap-4 backdrop-blur-xl shadow-[0_0_40px_rgba(245,158,11,0.1)]">
+                <div className="flex items-center gap-4 text-center sm:text-left">
+                  <div className="w-12 h-12 bg-amber-500/20 rounded-2xl flex items-center justify-center text-2xl shadow-inner">
+                    🎉
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-amber-500 uppercase tracking-widest">
+                      Launch Special: 50% OFF
+                    </h3>
+                    <p className="text-amber-100/80 text-sm font-medium">
+                      Get{" "}
+                      <span className="text-white font-bold">
+                        20 credits for just $5
+                      </span>
+                      . Offer ends in 48 hours.
+                    </p>
+                  </div>
+                </div>
+                <a
+                  href="https://ko-fi.com/s/de1cb65423"
+                  target="_blank"
+                  className="w-full sm:w-auto bg-amber-500 hover:bg-amber-400 text-[#030712] px-8 py-3 rounded-2xl font-black text-xs transition-all shadow-[0_0_20px_rgba(245,158,11,0.4)] hover:scale-105 active:scale-95 whitespace-nowrap text-center"
+                >
+                  CLAIM $5 OFFER →
+                </a>
+              </div>
+            </div>
+
             <h2 className="text-4xl font-extrabold mb-2 tracking-tight">
               Dashboard
             </h2>
@@ -581,10 +611,10 @@ export default function Home() {
                 target="_blank"
                 className="text-sm text-amber-400 font-bold hover:text-amber-300 transition underline decoration-amber-400/30"
               >
-                Get 20 more credits ($10) →
+                Get 20 more credits ($5) →
               </a>
-              <span className="text-[9px] text-gray-500 mt-1 uppercase tracking-widest font-bold">
-                INSTANT AUTOMATED DELIVERY ⚡
+              <span className="text-[9px] text-gray-500 mt-1 uppercase tracking-widest font-bold italic">
+                Launch Discount Active ⚡
               </span>
             </div>
             <button
