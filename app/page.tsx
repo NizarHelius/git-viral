@@ -231,7 +231,7 @@ export default function Home() {
         </header>
 
         {/* --- PLAYGROUND --- */}
-        <section className="max-w-4xl mx-auto px-6 mb-40 relative">
+        <section className="max-w-4xl mx-auto px-6 mb-20 relative">
           <div className="bg-white/5 border border-white/10 rounded-[40px] p-1.5 backdrop-blur-3xl shadow-2xl overflow-hidden focus-within:border-blue-500/40 transition-all duration-500">
             <div className="bg-[#030712]/80 rounded-[36px] overflow-hidden">
               <textarea
@@ -325,6 +325,15 @@ export default function Home() {
               })}
             </div>
           )}
+
+          {/* WHY GITVIRAL --- */}
+          <div className="mt-16 text-center max-w-2xl mx-auto">
+            <p className="text-gray-500 text-sm leading-relaxed">
+              Why not just use ChatGPT? Because GitViral is 5x faster, saves
+              your history, and is specifically tuned by developers to avoid
+              "AI-cringe" marketing speak.
+            </p>
+          </div>
         </section>
         {/* --- TRUST BAR --- */}
         <div className="mt-16 flex flex-col items-center gap-6 animate-in fade-in duration-1000 delay-500 pb-20 pt-12 border-t border-white/5">
