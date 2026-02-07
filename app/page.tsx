@@ -314,7 +314,7 @@ export default function Home() {
                               }
                               className="bg-white text-black px-8 py-3 rounded-2xl text-xs font-black shadow-[0_0_30px_rgba(255,255,255,0.3)] hover:scale-105 active:scale-95 transition"
                             >
-                              UNLOCK WITH 3 FREE CREDITS →
+                              UNLOCK WITH 10 FREE CREDITS →
                             </button>
                           </div>
                         </div>
@@ -492,7 +492,7 @@ export default function Home() {
               onClick={() => router.push("/login?mode=register")}
               className="bg-blue-600 text-white px-12 py-4 rounded-2xl font-bold shadow-xl shadow-blue-600/20 hover:scale-105 transition active:scale-95"
             >
-              Get My 3 Free Credits →
+              Get My 10 Free Credits →
             </button>
           </div>
         </section>
