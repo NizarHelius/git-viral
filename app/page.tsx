@@ -58,6 +58,19 @@ export default function Home() {
     }
   }, []);
 
+  // Restore input/output when returning from Library view
+  useEffect(() => {
+    const savedInput = localStorage.getItem("restore_input");
+    const savedOutput = localStorage.getItem("restore_output");
+
+    if (savedInput !== null || savedOutput !== null) {
+      if (savedInput) setInput(savedInput);
+      if (savedOutput) setOutput(savedOutput);
+      localStorage.removeItem("restore_input");
+      localStorage.removeItem("restore_output");
+    }
+  }, []);
+
   // 1.6 Dismiss Message
   const dismissMessage = async () => {
     setAnnouncement(null);
